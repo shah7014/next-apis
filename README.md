@@ -1,6 +1,6 @@
 ### Next-API
 
-- This ia NextJs 15 project focusing on API devleopment with mongo db databse
+- This is a NextJs 15 project focusing on API devleopment with mongo db database
 
 - APIs we have created:-
 
