@@ -8,30 +8,15 @@ import { getAsSuccessResponse } from "@/utils/responseHandler";
 
 export const POST = async (request) => {
   try {
-    const candidateUser = await request.json();
+    const { username, email, password } = await request.json();
     await connectToDB();
-    const newUser = await User.create(candidateUser);
-    // Generate auth and refresh token
-    const authToken = generateAuthToken(
-      { id: newUser["_id"] },
-      { expiresIn: "1h" }
-    );
-    const refreshToken = generateRefreshToken(
-      { id: newUser["_id"] },
-      { expiresIn: "7d" }
-    );
-    // Save refresh token in DB
-    await User.findByIdAndUpdate(newUser["_id"], {
-      refreshToken,
-    });
-    // Attach refresh token in cookie and send auth token as response
-    const cookieStore = await cookies();
-    cookieStore.set("jwt", refreshToken, {
-      httpOnly: true,
-      secure: process.env.ENVIRONMENT === "PRODUCTION",
-      maxAge: 7 * 24 * 60 * 60,
-    });
-    return NextResponse.json(getAsSuccessResponse("token", authToken), {
+    const newUser = await User.create({ username, email, password });
+    const userResponse = {
+      id: newUser["_id"],
+      email: newUser.email,
+      username: newUser.username,
+    };
+    return NextResponse.json(getAsSuccessResponse("user", userResponse), {
       status: 200,
     });
   } catch (error) {

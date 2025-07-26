@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
     },
     email: {
       type: String,
@@ -34,11 +35,28 @@ const userSchema = new mongoose.Schema(
       enum: ["ADMIN", "USER"],
       default: "USER",
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    // to reset the password if user forgets the password
+    forgotPasswordToken: String,
+    forgotPasswordExpiry: Date,
+    // to make a user verified
+    verifyToken: String,
+    verifyTokenExpiry: Date,
   },
   { timestamps: true }
 );
 
+userSchema.methods.comparePassword = function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// pre-save hooks
 userSchema.pre("save", async function (next) {
+  // Very important line. if not added
+  // it might again hahsh an already hashed password and in turn destroying the login flow
   if (!this.isModified("password")) {
     return next();
   }
